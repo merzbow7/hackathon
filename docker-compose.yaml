@@ -1,0 +1,92 @@
+services:
+  hackathon-keycloak:
+    image: quay.io/keycloak/keycloak
+    container_name: hackathon-keycloak
+    hostname: hackathon-keycloak
+    env_file:
+      - .env
+    command: [ "start-dev", "--import-realm" ]
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./keycloak/realm.json:/opt/keycloak/data/import/realm.json:ro
+    networks:
+      - hackathon-network
+
+  
+  hackathon-nginx:
+    container_name: hackathon-nginx
+    hostname: hackathon-nginx
+    image: nginx:latest
+    env_file:
+      - .env
+    volumes:
+      - ./nginx/templates:/etc/nginx/templates
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+    depends_on:
+      hackathon-bot-web:
+        condition: service_started
+    ports:
+      - "8083:80"
+    networks:
+      - hackathon-network
+
+
+  hackathon-db:
+    image: postgres:16.0
+    container_name: hackathon-db
+    hostname: hackathon-db
+    env_file:
+      - ./webhook_bot/.env
+    networks:
+      - hackathon-network
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  hackathon-migrations:
+    build:
+      context: ./webhook_bot
+      dockerfile: ./src/infrastructure/Dockerfile
+      target: migrations
+    env_file:
+      - ./webhook_bot/.env
+    depends_on:
+      hackathon-db:
+        condition: service_healthy
+    container_name: hackathon-migrations
+    hostname: hackathon-migrations
+    networks:
+      - hackathon-network
+
+
+  hackathon-bot-web:
+    build:
+      context: ./webhook_bot
+      dockerfile: ./src/infrastructure/Dockerfile
+      target: development
+    env_file:
+      - ./webhook_bot/.env
+    volumes:
+      - ./webhook_bot/src:/src
+    depends_on:
+      hackathon-migrations:
+        condition: service_completed_successfully
+    container_name: hackathon-bot-web
+    hostname: hackathon-bot-web
+    ports:
+      - "5000:5000"
+    networks:
+      - hackathon-network
+
+networks:
+  hackathon-network:
+    name: hackathon-network
+    driver: bridge
+
+volumes:
+  db-data:
