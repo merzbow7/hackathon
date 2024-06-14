@@ -3,7 +3,7 @@ from typing import Callable, Awaitable, Any, Dict
 from aiogram import BaseMiddleware
 from aiogram.types import Message, User
 
-from app.adapters.sqlalchemy_db.users.repository import UserRepository
+from app.adapters.sqlalchemy_db.users.repository import get_user_repo
 from app.bot.commands.start import auth_case
 
 
@@ -18,12 +18,11 @@ class AuthMiddleware(BaseMiddleware):
         data: Dict[str, Any]
     ) -> Any:
         telegram_user: User = data.get("event_from_user")
-        session_factory = data.get("session_factory")
         app = data.get("app")
         if not telegram_user:
             return await auth_case(message=event.message, app=app)
 
-        user_repo = UserRepository(session_factory)
+        user_repo = get_user_repo()
         user = await user_repo.get_verified_user(telegram_user.id)
         if not user:
             return await auth_case(message=event.message, app=app)

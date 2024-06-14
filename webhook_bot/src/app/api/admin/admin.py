@@ -1,115 +1,120 @@
 import uuid
 from typing import Annotated, List
 
-from fastapi import APIRouter, Depends
-from keycloak import KeycloakAdmin, KeycloakDeleteError, KeycloakPutError
-from pydantic import BaseModel, Field, TypeAdapter
+from fastapi import APIRouter, Depends, HTTPException
+from keycloak import KeycloakAdmin
+from pydantic import BaseModel, Field, TypeAdapter, ConfigDict, model_validator
+from pydantic_core.core_schema import ValidationInfo
+from sqlalchemy.exc import IntegrityError
 from starlette.responses import Response
 
+from app.adapters.sqlalchemy_db.institution.repository import get_institution_repo, InstitutionRepository
+from app.adapters.sqlalchemy_db.users.repository import UserRepository, get_user_repo
 from app.main.keycloak import get_keycloak_admin_provider
 
 admin_router = APIRouter(prefix="/admin")
 
 
-class KeyCloakUser(BaseModel):
-    telegram_id: uuid.UUID = Field(alias="id")
-    username: str
-    email: str | None
-    first_name: str | None = Field(alias="firstName")
-    last_name: str | None = Field(alias="lastName")
-
-
-class KeyCloakGroups(BaseModel):
-    group_id: uuid.UUID = Field(alias="id")
+class InstitutionModel(BaseModel):
+    id: int
     name: str
-    path: str
+
+    model_config = ConfigDict(from_attributes=True)
 
 
-class KeyCloakGroupsWithUser(BaseModel):
-    group_id: uuid.UUID = Field(alias="id")
-    name: str
-    path: str
-    users: list[KeyCloakUser]
+class UserModel(BaseModel):
+    id: int
+    telegram_id: int
+    first_name: str | None = Field(default=None)
+    last_name: str | None = Field(default=None)
+    keycloak_id: uuid.UUID
+    verification_code: uuid.UUID
+    institution: InstitutionModel | None
 
+    model_config = ConfigDict(from_attributes=True)
 
-class KeyCloakUserWithGroup(BaseModel):
-    telegram_id: uuid.UUID = Field(alias="id")
-    username: str
-    email: str | None
-    first_name: str | None = Field(alias="firstName")
-    last_name: str | None = Field(alias="lastName")
-    groups: list[KeyCloakGroups]
+    @model_validator(mode="after")
+    @classmethod
+    def remove_stopwords(cls, data: "UserModel", info: ValidationInfo):
+        context = info.context
+        if not context:
+            return data
+        kc_user = context.get(str(data.keycloak_id))
+        if kc_user:
+            data.first_name = kc_user.get("firstName")
+            data.last_name = kc_user.get("lastName")
+        return data
 
 
 @admin_router.get("/users", tags=["user-management"])
 async def get_users(
+    user_repo: Annotated[UserRepository, Depends(get_user_repo)],
     keycloak_admin: Annotated[KeycloakAdmin, Depends(get_keycloak_admin_provider)],
-):
-    users = await keycloak_admin.a_get_users({"enabled": True, 'emailVerified': True})
-    ta = TypeAdapter(List[KeyCloakUser])
-    return ta.validate_python(users)
+) -> list[UserModel]:
+    kc_users = await keycloak_admin.a_get_users()
+    context = {user.get("id"): user for user in kc_users}
+    users = await user_repo.get_all()
+    ta = TypeAdapter(List[UserModel])
+    return ta.validate_python(users, context=context)
 
 
-@admin_router.get("/user", tags=["user-management"])
+@admin_router.get("/user/{user_id}", tags=["user-management"])
 async def get_user(
-    user_id: uuid.UUID,
+    user_id: int,
+    user_repo: Annotated[UserRepository, Depends(get_user_repo)],
     keycloak_admin: Annotated[KeycloakAdmin, Depends(get_keycloak_admin_provider)],
+) -> UserModel:
+    user = await user_repo.get_by_id(user_id)
+    if not user:
+        raise HTTPException(status_code=404)
+    kc_user = await keycloak_admin.a_get_user(str(user.keycloak_id))
+    return UserModel.model_validate(user, context={str(user.keycloak_id): kc_user})
+
+
+class UserInstitution(BaseModel):
+    institution_id: int | None
+
+
+@admin_router.put("/user/{user_id}", tags=["user-management"])
+async def set_user_institution(
+    user_id: int,
+    user_institution: UserInstitution,
+    user_repo: Annotated[UserRepository, Depends(get_user_repo)]
 ):
-    user_uuid = str(user_id)
-    user = await keycloak_admin.a_get_user(user_uuid)
-    user_groups = await keycloak_admin.a_get_user_groups(user_uuid)
-    user["groups"] = user_groups
-    return KeyCloakUserWithGroup.model_validate(user)
+    updated = await user_repo.set_institution(user_id, user_institution.institution_id)
+    if not updated:
+        raise HTTPException(status_code=404, detail="Not found")
+    return Response(status_code=204)
 
 
 @admin_router.get("/groups", tags=["user-management"])
 async def get_groups(
-    keycloak_admin: Annotated[KeycloakAdmin, Depends(get_keycloak_admin_provider)],
-):
-    groups = await keycloak_admin.a_get_groups({"enabled": True})
-    ta = TypeAdapter(List[KeyCloakGroups])
-    return ta.validate_python(groups)
+    institution_repo: Annotated[InstitutionRepository, Depends(get_institution_repo)],
+) -> list[InstitutionModel]:
+    institutions = await institution_repo.get_all()
+    ta = TypeAdapter(List[InstitutionModel])
+    return ta.validate_python(institutions)
 
 
-@admin_router.get("/group", tags=["user-management"])
+@admin_router.get("/group/{group_id}", tags=["user-management"])
 async def get_group(
-    group_id: uuid.UUID,
-    keycloak_admin: Annotated[KeycloakAdmin, Depends(get_keycloak_admin_provider)],
-):
-    group_uuid = str(group_id)
-    group = await keycloak_admin.a_get_group(group_uuid)
-    users = await keycloak_admin.a_get_group_members(group_uuid)
-    group["users"] = users
-    return KeyCloakGroupsWithUser.model_validate(group)
+    institution_id: int,
+    institution_repo: Annotated[InstitutionRepository, Depends(get_institution_repo)],
+) -> InstitutionModel:
+    institution = await institution_repo.get(institution_id)
+    if not institution:
+        raise HTTPException(status_code=404, detail="Not found")
+    return InstitutionModel.model_validate(institution)
 
 
-@admin_router.put("/add_group", tags=["user-management"])
+@admin_router.post("/add_group", tags=["user-management"])
 async def add_group(
-    user_id: uuid.UUID,
-    group_id: uuid.UUID,
-    keycloak_admin: Annotated[KeycloakAdmin, Depends(get_keycloak_admin_provider)],
+    group_name: str,
+    institution_repo: Annotated[InstitutionRepository, Depends(get_institution_repo)],
 ):
-    group_uuid = str(group_id)
-    user_uuid = str(user_id)
     try:
-        await keycloak_admin.a_group_user_add(user_uuid, group_uuid)
-    except KeycloakPutError as exc:
-        Response(status_code=exc.response_code, content=exc.error_message)
-    else:
-        return Response(status_code=204)
-
-
-@admin_router.put("/remove_group", tags=["user-management"])
-async def remove_group(
-    user_id: uuid.UUID,
-    group_id: uuid.UUID,
-    keycloak_admin: Annotated[KeycloakAdmin, Depends(get_keycloak_admin_provider)],
-):
-    group_uuid = str(group_id)
-    user_uuid = str(user_id)
-    try:
-        await keycloak_admin.a_group_user_remove(user_uuid, group_uuid)
-    except KeycloakDeleteError as exc:
-        Response(status_code=exc.response_code, content=exc.error_message)
+        await institution_repo.add(group_name)
+    except IntegrityError:
+        raise HTTPException(status_code=400, detail="already exists")
     else:
         return Response(status_code=204)

@@ -9,7 +9,7 @@ from starlette.templating import Jinja2Templates
 def https_url_for(context: dict, name: str, **path_params) -> URL:
     request = context["request"]
     http_url: URL = request.url_for(name, **path_params)
-    return http_url.replace(scheme="https")
+    return http_url.replace(scheme="http")
 
 
 def prepare_template(app: FastAPI):

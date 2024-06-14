@@ -1,7 +1,6 @@
 from contextlib import asynccontextmanager
 from urllib.parse import urljoin
 
-from app.adapters.sqlalchemy_db.db import prepare_connection
 from app.bot.main import get_bot
 from app.config.settings import get_settings
 from app.main.typed import FastApiApp
@@ -13,8 +12,6 @@ async def lifespan(app: FastApiApp):
     settings = get_settings()
     dp["settings"] = settings
     dp["app"] = app
-    prepare_connection(app)
-    dp["session_factory"] = app.async_session
 
     webhook_endpoint = f"/webhook/{settings.webhook_part}"
     webhook_url = urljoin(settings.base_url, webhook_endpoint)

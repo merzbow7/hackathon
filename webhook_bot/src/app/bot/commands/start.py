@@ -15,7 +15,7 @@ start_router = Router()
 async def auth_case(message: Message, app: FastApiApp):
     builder = InlineKeyboardBuilder()
 
-    verification_code = await create_user_use_case(message.from_user.id, app=app)
+    verification_code = await create_user_use_case(message.from_user.id)
 
     url_builder = UrlBuilder(
         base_url=app.settings.base_url,

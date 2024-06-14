@@ -23,7 +23,7 @@ def get_json_file() -> BufferedInputFile:
 
 
 @json_router.message(F.text, Command("json_pack"))
-async def get_json(message: Message, app: FastApiApp) -> None:
+async def get_json(message: Message) -> None:
     file = get_json_file()
     await message.answer_document(file, reply_markup=get_commands_kb())
 

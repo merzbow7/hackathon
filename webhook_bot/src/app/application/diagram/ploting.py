@@ -1,6 +1,6 @@
 import io
 import threading
-from typing import Final, Any, TypeAlias
+from typing import Final, TypeAlias
 
 import pandas as pd
 from matplotlib import pyplot as plt

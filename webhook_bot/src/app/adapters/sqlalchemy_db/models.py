@@ -1,11 +1,9 @@
 import uuid
 
-from sqlalchemy import MetaData
+from sqlalchemy import MetaData, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import Mapped, mapped_column, registry
+from sqlalchemy.orm import Mapped, mapped_column, registry, relationship
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
-
-from app.application.models.telegram_user import User
 
 # Определяем соглашение об именованиях
 naming_convention = {
@@ -21,13 +19,29 @@ Base = declarative_base(metadata=metadata)
 mapper_registry = registry()
 
 
-class TelegramUser(Base):
+class Institution(Base):
+    __tablename__ = "institution"
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    name: Mapped[str] = mapped_column(unique=True)
+
+    users: Mapped[list["User"]] = relationship(back_populates="institution")
+
+
+class User(Base):
     __tablename__ = "telegram_user"
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    telegram_id: Mapped[int]
-    keycloak_id: Mapped[uuid.UUID] = mapped_column(PG_UUID(as_uuid=True), nullable=True)
-    verification_code: Mapped[uuid.UUID] = mapped_column(PG_UUID(as_uuid=True), nullable=True)
+    telegram_id: Mapped[int] = mapped_column(unique=True)
+    keycloak_id: Mapped[uuid.UUID] = mapped_column(
+        PG_UUID(as_uuid=True), nullable=True, unique=True,
+    )
+    verification_code: Mapped[uuid.UUID] = mapped_column(
+        PG_UUID(as_uuid=True), nullable=True, default=uuid.uuid4,
+    )
+    institution_id: Mapped[int] = mapped_column(
+        ForeignKey("institution.id", ondelete="cascade"),
+        nullable=True
+    )
 
-
-mapper_registry.map_imperatively(User, TelegramUser.__table__)
+    institution: Mapped["Institution"] = relationship(back_populates="users", foreign_keys=[institution_id])

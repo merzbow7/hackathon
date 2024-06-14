@@ -1,6 +1,6 @@
 __all__ = [
     "Base",
-    "TelegramUser"
+    "User"
 ]
 
-from app.adapters.sqlalchemy_db.models import Base, TelegramUser
+from app.adapters.sqlalchemy_db.models import Base, User

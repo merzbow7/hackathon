@@ -2,8 +2,8 @@ import asyncio
 import uuid
 from pprint import pprint
 
-from keycloak import KeycloakOpenID, KeycloakAdmin
-from pydantic import BaseModel, Field, TypeAdapter
+from keycloak import KeycloakAdmin
+from pydantic import BaseModel, Field
 
 from app.config.settings import get_settings
 

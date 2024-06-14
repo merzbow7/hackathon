@@ -1,10 +1,6 @@
 import uvicorn
 from fastapi import FastAPI
-from starlette.staticfiles import StaticFiles
-from starlette.templating import Jinja2Templates
 
-from app.adapters.sqlalchemy_db.db import prepare_connection, AsyncSessionMaker, make_session_factory
-from app.adapters.sqlalchemy_db.users.repository import UserRepository
 from app.bot import lifespan
 from app.config.settings import get_settings
 from app.main import init_routers

@@ -1,6 +1,3 @@
-from fastapi import FastAPI
-
-from app.api.admin.admin import admin_router
 from app.api.root import root_router, web_router
 from app.api.webhook import webhook
 from app.main.typed import FastApiApp
