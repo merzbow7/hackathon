@@ -1,11 +1,12 @@
 import asyncio
 import logging
 
-from aiogram import Router, F
+from aiogram import F, Router
 from aiogram.exceptions import TelegramBadRequest
 from aiogram.filters import Command
-from aiogram.types import Message, InlineKeyboardButton, CallbackQuery, BufferedInputFile
-from aiogram.utils.formatting import as_list, as_marked_section, Bold, Text
+from aiogram.types import (BufferedInputFile, CallbackQuery,
+                           InlineKeyboardButton, Message)
+from aiogram.utils.formatting import Bold, Text, as_list, as_marked_section
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 from app.application.diagram.ploting import make_remaining_diagram

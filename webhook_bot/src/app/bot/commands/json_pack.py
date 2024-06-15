@@ -2,14 +2,13 @@ import io
 import json
 import logging
 
-from aiogram import Router, F
+from aiogram import F, Router
 from aiogram.exceptions import TelegramBadRequest
 from aiogram.filters import Command
-from aiogram.types import Message, CallbackQuery, BufferedInputFile
+from aiogram.types import BufferedInputFile, CallbackQuery, Message
 
 from app.bot.data.remaining_data import remaining_dict
 from app.bot.keyboard.commands_kb import get_commands_kb
-from app.main.typed import FastApiApp
 
 json_router = Router()
 logger = logging.getLogger()

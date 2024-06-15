@@ -61,7 +61,7 @@ class UserRepository:
             result = await session.execute(stmt)
             return result.scalar_one_or_none()
 
-    async def verify(self, verification_code: uuid.UUID) -> User:
+    async def verify(self, verification_code: uuid.UUID, keycloak_id: uuid.UUID) -> User:
         async with self.session() as session:
             stmt = select(User).options(selectinload(User.institution)).where(
                 User.verification_code == verification_code,
@@ -72,7 +72,7 @@ class UserRepository:
                 update_stmt = update(
                     User
                 ).values(
-                    {"keycloak_id": uuid.uuid4()}
+                    {"keycloak_id": keycloak_id}
                 ).where(User.id == user.id)
                 await session.execute(update_stmt)
                 await session.commit()
@@ -81,5 +81,4 @@ class UserRepository:
 
 
 def get_user_repo() -> UserRepository:
-    session = session_factory
     return UserRepository(session_factory)

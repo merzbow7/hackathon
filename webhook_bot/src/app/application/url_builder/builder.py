@@ -1,4 +1,4 @@
-from urllib.parse import urlparse, urljoin, urlencode
+from urllib.parse import urlencode, urljoin, urlparse
 
 
 class UrlBuilder:

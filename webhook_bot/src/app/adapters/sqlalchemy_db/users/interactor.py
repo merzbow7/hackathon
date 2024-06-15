@@ -14,9 +14,3 @@ async def create_user_use_case(telegram_id: int) -> uuid.UUID:
     user = User(telegram_id=telegram_id)
     await repo.add(user)
     return user.verification_code
-
-
-async def verification_use_case(code: uuid.UUID) -> bool:
-    repo = get_user_repo()
-    db_user = await repo.verify(code)
-    return bool(db_user)

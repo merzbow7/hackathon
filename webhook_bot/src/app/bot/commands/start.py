@@ -1,14 +1,12 @@
-from aiogram import Router, Bot
+from aiogram import Bot, Router
 from aiogram.filters import CommandStart
-from aiogram.types import Message, InlineKeyboardButton
+from aiogram.types import InlineKeyboardButton, Message
 from aiogram.utils.keyboard import InlineKeyboardBuilder
-from fastapi import FastAPI
 
 from app.adapters.sqlalchemy_db.users.interactor import create_user_use_case
 from app.application.url_builder.builder import UrlBuilder
 from app.bot.keyboard.commands_kb import get_commands_kb
 from app.config.settings import Settings
-from app.main.typed import FastApiApp
 
 start_router = Router()
 

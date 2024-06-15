@@ -3,14 +3,16 @@ from typing import Annotated, List
 
 from fastapi import APIRouter, Depends, HTTPException
 from keycloak import KeycloakAdmin
-from pydantic import BaseModel, Field, TypeAdapter, ConfigDict, model_validator
+from pydantic import BaseModel, ConfigDict, Field, TypeAdapter, model_validator
 from pydantic_core.core_schema import ValidationInfo
 from sqlalchemy.exc import IntegrityError
 from starlette.responses import Response
 
-from app.adapters.sqlalchemy_db.institution.repository import get_institution_repo, InstitutionRepository
-from app.adapters.sqlalchemy_db.users.repository import UserRepository, get_user_repo
-from app.main.keycloak import get_keycloak_admin_provider
+from app.adapters.sqlalchemy_db.institution.repository import (
+    InstitutionRepository, get_institution_repo)
+from app.adapters.sqlalchemy_db.users.repository import (UserRepository,
+                                                         get_user_repo)
+from app.main.keycloak_provider import get_keycloak_admin_provider
 
 admin_router = APIRouter(prefix="/admin")
 
@@ -27,7 +29,7 @@ class UserModel(BaseModel):
     telegram_id: int
     first_name: str | None = Field(default=None)
     last_name: str | None = Field(default=None)
-    keycloak_id: uuid.UUID
+    keycloak_id: uuid.UUID | None
     verification_code: uuid.UUID
     institution: InstitutionModel | None
     enabled: bool

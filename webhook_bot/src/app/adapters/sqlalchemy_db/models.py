@@ -1,9 +1,9 @@
 import uuid
 
-from sqlalchemy import MetaData, ForeignKey
+from sqlalchemy import ForeignKey, MetaData, BigInteger, Identity
+from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import Mapped, mapped_column, registry, relationship
-from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 
 # Определяем соглашение об именованиях
 naming_convention = {
@@ -22,7 +22,7 @@ mapper_registry = registry()
 class Institution(Base):
     __tablename__ = "institution"
 
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    id: Mapped[int] = mapped_column(BigInteger, Identity(), primary_key=True)
     name: Mapped[str] = mapped_column(unique=True)
 
     users: Mapped[list["User"]] = relationship(back_populates="institution")
@@ -31,7 +31,7 @@ class Institution(Base):
 class User(Base):
     __tablename__ = "telegram_user"
 
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    id: Mapped[int] = mapped_column(BigInteger, Identity(), primary_key=True)
     telegram_id: Mapped[int] = mapped_column(unique=True)
     keycloak_id: Mapped[uuid.UUID] = mapped_column(
         PG_UUID(as_uuid=True), nullable=True, unique=True,

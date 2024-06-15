@@ -1,11 +1,13 @@
 import asyncio
 import sys
+from logging import getLogger
 from pathlib import Path
 
-from aiogram import Bot, Dispatcher
+from aiogram import Bot, Dispatcher, types
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
-from aiogram import types
+
+logger = getLogger()
 
 
 async def get_bot():
@@ -32,4 +34,5 @@ async def get_bot():
 
 if __name__ == '__main__':
     sys.path.append(str(Path().absolute()))
+    logger.debug("Start bot")
     asyncio.run(get_bot())
