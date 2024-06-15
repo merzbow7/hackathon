@@ -43,5 +43,6 @@ class User(Base):
         ForeignKey("institution.id", ondelete="cascade"),
         nullable=True
     )
+    enabled: Mapped[bool] = mapped_column(default=True)
 
     institution: Mapped["Institution"] = relationship(back_populates="users", foreign_keys=[institution_id])

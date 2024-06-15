@@ -24,8 +24,7 @@ services:
   hackathon-migrations:
     build:
       context: .
-      dockerfile: src/infrastructure/Dockerfile
-      target: migrations
+      dockerfile: src/infrastructure/Dockerfile.migrations
     env_file:
       - .env
     depends_on:
@@ -40,8 +39,7 @@ services:
   hackathon-bot-web:
     build:
       context: .
-      dockerfile: src/infrastructure/Dockerfile
-      target: development
+      dockerfile: src/infrastructure/Dockerfile.web
     env_file:
       - .env
     volumes:

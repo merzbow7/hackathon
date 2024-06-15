@@ -14,22 +14,24 @@ services:
       - hackathon-network
 
   
-  hackathon-nginx:
-    container_name: hackathon-nginx
-    hostname: hackathon-nginx
-    image: nginx:latest
-    env_file:
-      - .env
-    volumes:
-      - ./nginx/templates:/etc/nginx/templates
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
-    depends_on:
-      hackathon-bot-web:
-        condition: service_started
-    ports:
-      - "8083:80"
-    networks:
-      - hackathon-network
+#  hackathon-nginx:
+#    container_name: hackathon-nginx
+#    hostname: hackathon-nginx
+#    image: nginx:latest
+#    env_file:
+#      - .env
+#    volumes:
+#      - ./nginx/templates:/etc/nginx/templates
+#      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+#      - ./nginx/ca/certificate.crt:/etc/nginx/ssl/certificate.crt
+#      - ./nginx/ca/private.key:/etc/nginx/ssl/private.key
+#    depends_on:
+#      hackathon-bot-web:
+#        condition: service_started
+#    ports:
+#      - "8083:80"
+#    networks:
+#      - hackathon-network
 
 
   hackathon-db:
@@ -53,7 +55,7 @@ services:
   hackathon-migrations:
     build:
       context: ./webhook_bot
-      dockerfile: ./src/infrastructure/Dockerfile
+      dockerfile: ./src/infrastructure/Dockerfile.migrations
       target: migrations
     env_file:
       - ./webhook_bot/.env
@@ -66,10 +68,10 @@ services:
       - hackathon-network
 
 
-  hackathon-bot-web:
+  hackathon-web:
     build:
       context: ./webhook_bot
-      dockerfile: ./src/infrastructure/Dockerfile
+      dockerfile: ./src/infrastructure/Dockerfile.web
       target: development
     env_file:
       - ./webhook_bot/.env
@@ -78,10 +80,24 @@ services:
     depends_on:
       hackathon-migrations:
         condition: service_completed_successfully
-    container_name: hackathon-bot-web
-    hostname: hackathon-bot-web
+    container_name: hackathon-web
+    hostname: hackathon-web
     ports:
       - "5000:5000"
+    networks:
+      - hackathon-network
+
+  hackathon-bot:
+    build:
+      context: ./webhook_bot
+      dockerfile: ./src/infrastructure/Dockerfile.bot
+    env_file:
+      - ./webhook_bot/.env
+    depends_on:
+      hackathon-migrations:
+        condition: service_completed_successfully
+    container_name: hackathon-bot
+    hostname: hackathon-bot
     networks:
       - hackathon-network
 

@@ -1,20 +1,24 @@
+import asyncio
+import sys
+from pathlib import Path
+
 from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
 from aiogram import types
 
-from app.bot.middleware import AuthMiddleware
-from app.bot.router import bot_router
-from app.main.typed import FastApiApp
 
+async def get_bot():
+    from app.bot.middleware import AuthMiddleware
+    from app.bot.router import bot_router
+    from app.config.settings import get_settings
 
-async def get_bot(app: FastApiApp) -> tuple[Dispatcher, Bot]:
-    bot = Bot(token=app.settings.bot_token, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
+    settings = get_settings()
+    bot = Bot(token=settings.bot_token, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
     dp = Dispatcher()
+    dp["settings"] = settings
     dp.update.outer_middleware(AuthMiddleware())
     dp.include_routers(bot_router)
-    app.bot = bot
-    app.dp = dp
 
     await bot.set_my_commands(
         [
@@ -23,5 +27,9 @@ async def get_bot(app: FastApiApp) -> tuple[Dispatcher, Bot]:
             types.BotCommand(command="/predict", description="Посмотреть прогноз"),
         ]
     )
+    await dp.start_polling(bot)
 
-    return dp, bot
+
+if __name__ == '__main__':
+    sys.path.append(str(Path().absolute()))
+    asyncio.run(get_bot())

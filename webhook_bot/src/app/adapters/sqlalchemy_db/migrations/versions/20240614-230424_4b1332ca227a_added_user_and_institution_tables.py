@@ -1,8 +1,8 @@
-"""Added User and Group table
+"""Added User and Institution tables
 
-Revision ID: b415aa92d5ae
+Revision ID: 4b1332ca227a
 Revises: 
-Create Date: 2024-06-14 05:28:10.227827
+Create Date: 2024-06-14 23:04:24.929196
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = 'b415aa92d5ae'
+revision: str = '4b1332ca227a'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -32,6 +32,7 @@ def upgrade() -> None:
     sa.Column('keycloak_id', sa.UUID(), nullable=True),
     sa.Column('verification_code', sa.UUID(), nullable=True),
     sa.Column('institution_id', sa.Integer(), nullable=True),
+    sa.Column('enabled', sa.Boolean(), nullable=False),
     sa.ForeignKeyConstraint(['institution_id'], ['institution.id'], name=op.f('fk_telegram_user_institution_id_institution'), ondelete='cascade'),
     sa.PrimaryKeyConstraint('id', name=op.f('pk_telegram_user')),
     sa.UniqueConstraint('keycloak_id', name=op.f('uq_telegram_user_keycloak_id')),

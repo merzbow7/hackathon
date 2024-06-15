@@ -30,6 +30,7 @@ class UserModel(BaseModel):
     keycloak_id: uuid.UUID
     verification_code: uuid.UUID
     institution: InstitutionModel | None
+    enabled: bool
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -87,7 +88,7 @@ async def set_user_institution(
     return Response(status_code=204)
 
 
-@admin_router.get("/groups", tags=["user-management"])
+@admin_router.get("/institutions", tags=["user-management"])
 async def get_groups(
     institution_repo: Annotated[InstitutionRepository, Depends(get_institution_repo)],
 ) -> list[InstitutionModel]:
@@ -96,7 +97,7 @@ async def get_groups(
     return ta.validate_python(institutions)
 
 
-@admin_router.get("/group/{group_id}", tags=["user-management"])
+@admin_router.get("/institutions/{group_id}", tags=["user-management"])
 async def get_group(
     institution_id: int,
     institution_repo: Annotated[InstitutionRepository, Depends(get_institution_repo)],
@@ -107,7 +108,7 @@ async def get_group(
     return InstitutionModel.model_validate(institution)
 
 
-@admin_router.post("/add_group", tags=["user-management"])
+@admin_router.post("/add_institution", tags=["user-management"])
 async def add_group(
     group_name: str,
     institution_repo: Annotated[InstitutionRepository, Depends(get_institution_repo)],

@@ -7,19 +7,20 @@ from fastapi import FastAPI
 from app.adapters.sqlalchemy_db.users.interactor import create_user_use_case
 from app.application.url_builder.builder import UrlBuilder
 from app.bot.keyboard.commands_kb import get_commands_kb
+from app.config.settings import Settings
 from app.main.typed import FastApiApp
 
 start_router = Router()
 
 
-async def auth_case(message: Message, app: FastApiApp):
+async def auth_case(message: Message, settings: Settings):
     builder = InlineKeyboardBuilder()
 
     verification_code = await create_user_use_case(message.from_user.id)
 
     url_builder = UrlBuilder(
-        base_url=app.settings.base_url,
-        path=app.url_path_for("register_telegram_user"),
+        base_url=settings.base_url,
+        path="/api/auth/registration",
         query={"code": verification_code}
     )
 
@@ -36,8 +37,8 @@ async def auth_case(message: Message, app: FastApiApp):
 
 
 @start_router.message(CommandStart())
-async def start(message: Message, app: FastAPI) -> None:
-    await auth_case(message, app)
+async def start(message: Message, settings: Settings) -> None:
+    await auth_case(message, settings)
 
 
 async def enjoy_bot(bot: Bot, telegram_id: int):

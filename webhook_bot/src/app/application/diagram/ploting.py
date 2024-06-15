@@ -2,8 +2,11 @@ import io
 import threading
 from typing import Final, TypeAlias
 
+import matplotlib
 import pandas as pd
 from matplotlib import pyplot as plt
+
+matplotlib.use('agg')
 
 SettingValue: TypeAlias = str | int | dict[str, int]
 image_settings: Final[dict[str, SettingValue]] = {

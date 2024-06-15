@@ -5,6 +5,7 @@ from aiogram.types import Message, User
 
 from app.adapters.sqlalchemy_db.users.repository import get_user_repo
 from app.bot.commands.start import auth_case
+from app.config.settings import Settings
 
 
 class AuthMiddleware(BaseMiddleware):
@@ -18,13 +19,13 @@ class AuthMiddleware(BaseMiddleware):
         data: Dict[str, Any]
     ) -> Any:
         telegram_user: User = data.get("event_from_user")
-        app = data.get("app")
+        settings: Settings = data.get("settings")
         if not telegram_user:
-            return await auth_case(message=event.message, app=app)
+            return await auth_case(message=event.message, settings=settings)
 
         user_repo = get_user_repo()
         user = await user_repo.get_verified_user(telegram_user.id)
         if not user:
-            return await auth_case(message=event.message, app=app)
+            return await auth_case(message=event.message, settings=settings)
 
         return await handler(event, data)
