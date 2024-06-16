@@ -321,6 +321,9 @@ def processing_json_calc_volume(time_period, df_contracts, df_directory, df_turn
                 items_list_contracts_spgz.append(item)
 
         if len(items_list) == 0 and len(items_list_contracts_spgz) == 0:
+            df_directory['реестровый_номер_в_рк'] = df_directory['реестровый_номер_в_рк'].astype(int)
+            df_contracts['реестровый_номер_в_рк'] = df_contracts['реестровый_номер_в_рк'].astype(int)
+
             df_merged = pd.merge(df_contracts, df_directory, left_on=['реестровый_номер_в_рк', 'конечный_код_кпгз'],
                                  right_on=['реестровый_номер_в_рк', 'кпгз_код'])
             items_list_contracts_ste = []

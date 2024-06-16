@@ -1,4 +1,6 @@
 import asyncio
+import io
+import json
 import logging
 from typing import Any
 
@@ -17,7 +19,8 @@ from app.adapters.sqlalchemy_db.db import session_factory
 from app.adapters.sqlalchemy_db.turnover.service import TurnoverService, ContractService, DictService
 from app.application.diagram.ploting import make_remaining_diagram, make_predict_diagram
 from app.application.predict.processing_user_requests import processing_user_request_remainders, \
-    processing_user_request_time_to_finish_check, processing_user_request_time_to_finish
+    processing_user_request_time_to_finish_check, processing_user_request_time_to_finish, processing_json_calc_volume, \
+    prepare_json
 
 logger = logging.getLogger()
 
@@ -27,6 +30,7 @@ remaining_router = Router()
 class TurnoverState(StatesGroup):
     name = State()
     select = State()
+    year = State()
 
 
 @remaining_router.message(F.text, Command("remaining"))
@@ -108,3 +112,74 @@ async def get_remaining_end(callback: CallbackQuery, state: FSMContext, db_user:
                 await callback.bot.send_photo(
                     callback.from_user.id, photo=photo, caption=output_str, reply_markup=kb
                 )
+
+
+@remaining_router.callback_query(F.data == "make_json")
+async def get_remaining_json(callback: CallbackQuery, state: FSMContext, db_user: User) -> None:
+    try:
+        await callback.bot.answer_callback_query(callback.id)
+    except TelegramBadRequest as exc:
+        logger.error(exc.message)
+    else:
+        await state.set_state(TurnoverState.year)
+        await callback.message.answer("Введите период для которого нужен прогноз")
+
+
+def get_json_file(json_data) -> BufferedInputFile:
+    json_buffer = io.StringIO()
+    json.dump(json_data, json_buffer, ensure_ascii=False)
+    json_buffer.seek(0)
+    return BufferedInputFile(file=json_buffer.getvalue().encode(), filename="data.json")
+
+
+@remaining_router.message(TurnoverState.year)
+async def get_remaining_json_name(message: Message, state: FSMContext, db_user: User) -> None:
+    data = await state.get_data()
+    user_item = data.get("name")
+    try:
+        time_period = float(message.text)
+    except TypeError:
+        await message.answer("Это не число")
+    else:
+        async with session_factory() as session:
+            turnover_service = TurnoverService(db_user, session)
+            products = await turnover_service.find_product()
+            df_turnover_total = pd.DataFrame(products)
+
+            dict_service = DictService(session)
+            directory = await dict_service.get_all()
+            df_directory = pd.DataFrame(directory)
+
+            contract_service = ContractService(db_user, session)
+            contracts = await contract_service.get_all()
+            df_contracts = pd.DataFrame(contracts)
+
+        res = processing_json_calc_volume(
+            time_period, df_contracts, df_directory, df_turnover_total, user_item
+        )
+        if res[0] == 1:
+            await message.answer(res[1])
+        elif res[0] == 2:
+            await message.answer(res[1])
+        else:
+            output_str = res[1]
+            df_tmp_res = res[2]
+            total_volume = res[3]
+            total_price = res[4]
+
+            _json_dict = prepare_json(
+                df_turnover_total, df_contracts, df_directory, user_item, total_volume, total_price,
+            )
+            json_dict = {
+                "delivery_time": float(_json_dict.get("delivery_time")),
+                "deliveryAmount": float(_json_dict.get("deliveryAmount")),
+                "entityId": int(_json_dict.get("entityId")),
+                "id": int(_json_dict.get("id")),
+                "nmc": float(_json_dict.get("nmc")),
+                "purchaseAmount": float(_json_dict.get("purchaseAmount")),
+                "spgzCharacteristics_kpgzCharacteristicId": _json_dict.get("spgzCharacteristics_kpgzCharacteristicId"),
+            }
+
+            json_file = get_json_file(json_dict)
+            await message.answer_document(json_file)
+            await message.answer(output_str, reply_markup=get_remaining_kb())
