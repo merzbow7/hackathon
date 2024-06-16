@@ -26,7 +26,6 @@ async def get_bot():
         [
             types.BotCommand(command="/start", description="Запуск бота"),
             types.BotCommand(command="/remaining", description="Посмотреть остатки"),
-            types.BotCommand(command="/predict", description="Посмотреть прогноз"),
         ]
     )
     await dp.start_polling(bot)
@@ -34,5 +33,5 @@ async def get_bot():
 
 if __name__ == '__main__':
     sys.path.append(str(Path().absolute()))
-    logger.debug("Start bot")
+    logger.info("Start bot")
     asyncio.run(get_bot())

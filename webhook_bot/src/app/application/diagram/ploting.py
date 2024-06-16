@@ -1,9 +1,11 @@
 import io
+import textwrap
 import threading
 from typing import Final, TypeAlias
 
 import matplotlib
 import pandas as pd
+import seaborn as sns
 from matplotlib import pyplot as plt
 
 matplotlib.use('agg')
@@ -20,14 +22,30 @@ image_settings: Final[dict[str, SettingValue]] = {
 }
 
 
-def make_remaining_diagram(data: list[dict]) -> bytes:
+def wrap_text(text, width):
+    return "\n".join(textwrap.wrap(text, width))
+
+
+def make_remaining_diagram(df: pd.DataFrame) -> bytes:
     with threading.RLock():
-        df = pd.DataFrame(data)
-        plt.bar(df["name"], df["count"])
-        plt.xlabel('Название')
-        plt.ylabel('Количестов')
-        plt.title('Остатки')
-        plt.xticks(rotation=45, ha="right")
+        df['товар'] = df['товар'].apply(lambda x: wrap_text(x, 70))
+
+        fig, ax = plt.subplots(figsize=(15, 7))
+        ax.axis('tight')
+        ax.axis('off')
+        table = ax.table(cellText=df.values, colLabels=df.columns, loc='center')
+
+        # Настройка стиля таблицы
+        table.auto_set_font_size(False)
+        table.set_fontsize(12)
+        table.scale(2, 2)
+        table.auto_set_column_width(col=list(range(len(df.columns))))
+
+        # Настройка размера ячеек
+        for (i, j), cell in table.get_celld().items():
+            cell.set_edgecolor('k')
+            cell.set_linewidth(0.5)
+            cell.set_height(0.2)
 
         buffer = io.BytesIO()
         plt.savefig(buffer, **image_settings)
@@ -36,16 +54,11 @@ def make_remaining_diagram(data: list[dict]) -> bytes:
         return buffer.getvalue()
 
 
-def make_predict_diagram(data: dict[str, dict]) -> bytes:
+def make_predict_diagram(df: pd.DataFrame) -> bytes:
     with threading.RLock():
-        df = pd.DataFrame(data)
-        df.plot(kind='bar', figsize=(10, 7))
-        plt.xlabel('Кварталы')
-        plt.ylabel('Количество')
-        plt.title('Столбчатая диаграмма по категориям и кварталам')
-        plt.legend(title='Категории')
-        plt.xticks(rotation=45, ha="right")
-        plt.tight_layout()
+        fig, ax = plt.subplots()
+        sns.barplot(df, x="количество", y="товар", ax=ax)
+        plt.grid()
 
         buffer = io.BytesIO()
         plt.savefig(buffer, **image_settings)
