@@ -74,7 +74,8 @@ async def get_user_info(payload: Annotated[dict, Depends(get_payload)]) -> KcUse
 
 
 async def admin_required(user: Annotated[KcUser, Depends(get_user_info)]) -> KcUser:
-    if "web-admin" not in user.realm_roles:
+    settings = get_settings()
+    if settings.vite_kk_admin_role not in user.realm_roles:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
         )

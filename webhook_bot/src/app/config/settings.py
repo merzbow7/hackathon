@@ -9,6 +9,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings):
     bot_token: str
     frontend_url: str
+    vite_kk_admin_role: str
 
     keycloak_server_url: str
     keycloak_client_id: str
