@@ -8,8 +8,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
     bot_token: str
-    webhook_part: str
-    base_url: str
+    frontend_url: str
 
     keycloak_server_url: str
     keycloak_client_id: str

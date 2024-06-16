@@ -4,7 +4,6 @@ from starlette.middleware.cors import CORSMiddleware
 
 from app.config.settings import get_settings
 from app.main import init_routers
-from app.main.template import prepare_template
 
 
 def create_app() -> FastAPI:
@@ -19,7 +18,6 @@ def create_app() -> FastAPI:
         allow_headers=["*"],
     )
     init_routers(app)
-    prepare_template(app)
 
     return app
 

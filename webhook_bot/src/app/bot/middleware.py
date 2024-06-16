@@ -28,4 +28,5 @@ class AuthMiddleware(BaseMiddleware):
         if not user:
             return await auth_case(message=event.message, settings=settings)
 
+        data["db_user"] = user
         return await handler(event, data)

@@ -12,6 +12,7 @@ from app.adapters.sqlalchemy_db.institution.repository import (
     InstitutionRepository, get_institution_repo)
 from app.adapters.sqlalchemy_db.users.repository import (UserRepository,
                                                          get_user_repo)
+from app.main.auth import KcUser, admin_required
 from app.main.keycloak_provider import get_keycloak_admin_provider
 
 admin_router = APIRouter(prefix="/admin")
@@ -53,6 +54,7 @@ class UserModel(BaseModel):
 async def get_users(
     user_repo: Annotated[UserRepository, Depends(get_user_repo)],
     keycloak_admin: Annotated[KeycloakAdmin, Depends(get_keycloak_admin_provider)],
+    _kc_user: Annotated[KcUser, Depends(admin_required)],
 ) -> list[UserModel]:
     kc_users = await keycloak_admin.a_get_users()
     context = {user.get("id"): user for user in kc_users}
@@ -66,6 +68,7 @@ async def get_user(
     user_id: int,
     user_repo: Annotated[UserRepository, Depends(get_user_repo)],
     keycloak_admin: Annotated[KeycloakAdmin, Depends(get_keycloak_admin_provider)],
+    _kc_user: Annotated[KcUser, Depends(admin_required)],
 ) -> UserModel:
     user = await user_repo.get_by_id(user_id)
     if not user:
@@ -82,7 +85,8 @@ class UserInstitution(BaseModel):
 async def set_user_institution(
     user_id: int,
     user_institution: UserInstitution,
-    user_repo: Annotated[UserRepository, Depends(get_user_repo)]
+    user_repo: Annotated[UserRepository, Depends(get_user_repo)],
+    _kc_user: Annotated[KcUser, Depends(admin_required)],
 ):
     updated = await user_repo.set_institution(user_id, user_institution.institution_id)
     if not updated:
@@ -93,6 +97,7 @@ async def set_user_institution(
 @admin_router.get("/institutions", tags=["user-management"])
 async def get_groups(
     institution_repo: Annotated[InstitutionRepository, Depends(get_institution_repo)],
+    _kc_user: Annotated[KcUser, Depends(admin_required)],
 ) -> list[InstitutionModel]:
     institutions = await institution_repo.get_all()
     ta = TypeAdapter(List[InstitutionModel])
@@ -103,6 +108,7 @@ async def get_groups(
 async def get_group(
     institution_id: int,
     institution_repo: Annotated[InstitutionRepository, Depends(get_institution_repo)],
+    _kc_user: Annotated[KcUser, Depends(admin_required)],
 ) -> InstitutionModel:
     institution = await institution_repo.get(institution_id)
     if not institution:
@@ -114,6 +120,7 @@ async def get_group(
 async def add_group(
     group_name: str,
     institution_repo: Annotated[InstitutionRepository, Depends(get_institution_repo)],
+    _kc_user: Annotated[KcUser, Depends(admin_required)],
 ):
     try:
         await institution_repo.add(group_name)

@@ -1,0 +1,14 @@
+.sidebar {
+    background-color: #FAFBFB !important;
+}
+
+.header {
+    background-color: #FAFBFB !important;
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 60px;
+    border-bottom: 1px solid #E6E7EB;
+}
