@@ -57,7 +57,8 @@ services:
       - hackathon-network
     volumes:
       - ./webhook_bot/src/app/adapters/sqlalchemy_db/import_data:/scripts
-    entrypoint: ["/bin/sh", "-c", "./scripts/import.sh"]
+    command: >
+      sh -c "chmod +x /scripts/import.sh && /scripts/import.sh"
 
   hackathon-migrations:
     build:
