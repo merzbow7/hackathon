@@ -5,11 +5,15 @@ services:
     hostname: hackathon-keycloak
     env_file:
       - .env
-    command: [ "start-dev", "--import-realm", "--proxy-headers=xforwarded", "--hostname-strict=false" ]
+    command:
+      - "start-dev"
+      - "--import-realm"
+      - "--hostname-strict=false"
+      - "--http-enabled=true"
     ports:
       - "8080:8080"
     volumes:
-      - ./keycloak/realm.json:/opt/keycloak/data/import/realm.json:ro
+      - ./keycloak/Steel-realm.json:/opt/keycloak/data/import/Steel-realm.json:ro
     networks:
       - hackathon-network
 
