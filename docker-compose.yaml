@@ -13,7 +13,7 @@ services:
     ports:
       - "8080:8080"
     volumes:
-      - ./keycloak/Steel-realm.json:/opt/keycloak/data/import/Steel-realm.json:ro
+      - ./keycloak/realm.json:/opt/keycloak/data/import/realm.json:ro
     networks:
       - hackathon-network
 
