@@ -125,11 +125,11 @@ async def get_remaining_json(callback: CallbackQuery, state: FSMContext, db_user
         await callback.message.answer("Введите период для которого нужен прогноз")
 
 
-def get_json_file(json_data) -> BufferedInputFile:
+def get_json_file(json_data: dict, filename: str = "data.json") -> BufferedInputFile:
     json_buffer = io.StringIO()
     json.dump(json_data, json_buffer, ensure_ascii=False)
     json_buffer.seek(0)
-    return BufferedInputFile(file=json_buffer.getvalue().encode(), filename="data.json")
+    return BufferedInputFile(file=json_buffer.getvalue().encode(), filename=filename)
 
 
 @remaining_router.message(TurnoverState.year)
@@ -179,7 +179,7 @@ async def get_remaining_json_name(message: Message, state: FSMContext, db_user: 
                 "purchaseAmount": float(_json_dict.get("purchaseAmount")),
                 "spgzCharacteristics_kpgzCharacteristicId": _json_dict.get("spgzCharacteristics_kpgzCharacteristicId"),
             }
-
-            json_file = get_json_file(json_dict)
+            filename = f"{user_item}_{time_period}_лет.json"
+            json_file = get_json_file(json_dict, filename)
             await message.answer_document(json_file)
             await message.answer(output_str, reply_markup=get_remaining_kb())

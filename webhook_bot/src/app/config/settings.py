@@ -2,7 +2,7 @@ from functools import lru_cache
 from typing import Annotated
 
 from fastapi import Depends
-from pydantic import PostgresDsn, model_validator
+from pydantic import PostgresDsn, model_validator, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -23,6 +23,8 @@ class Settings(BaseSettings):
     postgres_password: str
     postgres_db: str
     db_uri: PostgresDsn
+
+    skip_auth: bool = Field(default=True)
 
     model_config = SettingsConfigDict(
         env_file_encoding='utf-8'
