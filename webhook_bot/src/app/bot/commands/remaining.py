@@ -62,6 +62,14 @@ def get_remaining_kb() -> InlineKeyboardMarkup:
     return builder.as_markup()
 
 
+def get_remaining_buy_kb() -> InlineKeyboardMarkup:
+    buy_button = InlineKeyboardButton(text="Сколько закупить", callback_data="how_much_need_buy")
+    json_button = InlineKeyboardButton(text="Сформировать json", callback_data="make_json")
+    builder = InlineKeyboardBuilder()
+    builder.row(buy_button, json_button)
+    return builder.as_markup()
+
+
 @remaining_router.message(TurnoverState.name)
 async def get_remaining_name(message: Message, state: FSMContext, db_user: User) -> None:
     await state.update_data(name=message.text)
@@ -79,7 +87,7 @@ async def get_remaining_name(message: Message, state: FSMContext, db_user: User)
             kb = get_remaining_kb()
             await message.bot.send_photo(message.from_user.id, photo=photo, caption=remainder[1], reply_markup=kb)
         else:
-            await message.answer(remainder[1])
+            await message.answer(remainder[1], reply_markup=get_remaining_buy_kb())
     else:
         await message.answer("Не найдено")
 
@@ -119,14 +127,13 @@ async def get_remaining_end(callback: CallbackQuery, state: FSMContext, db_user:
             if res[0] == 1:
                 await callback.message.answer(text=res[1])
             else:
-                output_str = res[1]
+                output_str = end[1] + '\n' + res[1]
                 df = res[2]
                 buffer = await asyncio.to_thread(make_predict_end_diagram, df)
                 photo = BufferedInputFile(buffer, filename="will_end.jpg")
                 kb = get_remaining_kb()
-                await callback.bot.send_photo(
-                    callback.from_user.id, photo=photo, caption=output_str, reply_markup=kb
-                )
+                await callback.message.answer(output_str)
+                await callback.bot.send_photo(callback.from_user.id, photo=photo, reply_markup=kb)
 
 
 @remaining_router.callback_query(F.data == "how_much_need_buy")
@@ -176,7 +183,6 @@ async def get_remaining_json_name(
             kb = get_remaining_kb()
             await message.bot.send_photo(message.from_user.id, photo=photo)
             await message.answer(output_str, reply_markup=kb)
-
 
 
 @remaining_router.callback_query(F.data == "make_json")

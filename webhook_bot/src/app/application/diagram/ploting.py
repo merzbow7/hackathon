@@ -7,6 +7,7 @@ import matplotlib
 import pandas as pd
 import seaborn as sns
 from matplotlib import pyplot as plt
+from matplotlib.font_manager import FontProperties
 
 matplotlib.use('agg')
 
@@ -29,6 +30,7 @@ def wrap_text(text, width):
 def make_remaining_diagram(df: pd.DataFrame) -> bytes:
     with threading.RLock():
         df['товар'] = df['товар'].apply(lambda x: wrap_text(x, 70))
+        df.columns = df.columns.str.replace('_', ' ')
 
         fig, ax = plt.subplots(figsize=(15, 7))
         ax.axis('tight')
@@ -41,11 +43,21 @@ def make_remaining_diagram(df: pd.DataFrame) -> bytes:
         table.scale(2, 2)
         table.auto_set_column_width(col=list(range(len(df.columns))))
 
+        for (row, col), cell in table.get_celld().items():
+            if (row == 0) or (col == -1):
+                cell.set_text_props(fontproperties=FontProperties(weight='bold'))
+
+        for cell in table._cells:
+            if cell[0] == 0:
+                table._cells[cell].set_fontsize(14)
+
         # Настройка размера ячеек
         for (i, j), cell in table.get_celld().items():
             cell.set_edgecolor('k')
             cell.set_linewidth(0.5)
             cell.set_height(0.2)
+
+        plt.show()
 
         buffer = io.BytesIO()
         plt.savefig(buffer, **image_settings)
