@@ -5,7 +5,7 @@ from app.adapters.sqlalchemy_db.users.repository import get_user_repo
 from app.config.settings import get_settings
 
 
-async def create_user_use_case(telegram_id: int, default_institution: int = 1) -> uuid.UUID:
+async def create_user_use_case(telegram_id: int, username: str, default_institution: int = 1) -> uuid.UUID:
     repo = get_user_repo()
     db_user = await repo.get_by_telegram(telegram_id)
 
@@ -13,8 +13,13 @@ async def create_user_use_case(telegram_id: int, default_institution: int = 1) -
         return db_user.verification_code
     settings = get_settings()
     if settings.skip_auth:
-        user = User(telegram_id=telegram_id, keycloak_id=uuid.uuid4(), institution_id=default_institution)
+        user = User(
+            telegram_id=telegram_id,
+            keycloak_id=uuid.uuid4(),
+            institution_id=default_institution,
+            telegram_username=username,
+        )
     else:
-        user = User(telegram_id=telegram_id)
+        user = User(telegram_id=telegram_id, telegram_username=username)
     await repo.add(user)
     return user.verification_code

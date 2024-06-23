@@ -36,6 +36,7 @@ class User(Base):
 
     id: Mapped[int] = mapped_column(BigInteger, Identity(), primary_key=True)
     telegram_id: Mapped[int] = mapped_column(unique=True)
+    telegram_username: Mapped[str] = mapped_column(nullable=True)
     keycloak_id: Mapped[uuid.UUID] = mapped_column(
         PG_UUID(as_uuid=True), nullable=True, unique=True,
     )

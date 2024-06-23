@@ -29,6 +29,7 @@ class InstitutionModel(BaseModel):
 class UserModel(BaseModel):
     id: int
     telegram_id: int
+    telegram_username: str | None
     first_name: str | None = Field(default=None)
     last_name: str | None = Field(default=None)
     keycloak_id: uuid.UUID | None

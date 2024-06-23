@@ -13,8 +13,9 @@ start_router = Router()
 
 async def auth_case(message: Message, settings: Settings):
     builder = InlineKeyboardBuilder()
+    print(f"{message.from_user=}")
 
-    verification_code = await create_user_use_case(message.from_user.id)
+    verification_code = await create_user_use_case(message.from_user.id, message.from_user.username)
     if settings.skip_auth and verification_code:
         await message.answer("Вы авторизованы. Можете приступать к работе")
         return
