@@ -24,7 +24,8 @@ from keycloak import KeycloakAdmin
 from app.adapters.sqlalchemy_db import User
 from app.adapters.sqlalchemy_db.db import session_factory
 from app.adapters.sqlalchemy_db.turnover.service import TurnoverService, ContractService, DictService
-from app.application.diagram.ploting import make_remaining_diagram, make_predict_end_diagram, make_predict_buy_diagram
+from app.application.diagram.ploting import make_remaining_diagram, make_predict_end_diagram, make_predict_buy_diagram, \
+    make_json_diagram
 from app.application.predict.processing_user_requests import (
     processing_user_request_remainders,
     processing_user_request_time_to_finish_check,
@@ -250,7 +251,7 @@ async def get_remaining_json_name(
             await message.answer(res[1])
         else:
             output_str = res[1]
-            df_tmp_res = res[2]
+            df = res[2]
             total_volume = res[3]
             total_price = res[4]
             okei_code = res[5]
@@ -264,11 +265,15 @@ async def get_remaining_json_name(
                 total_price,
                 okei_code,
             )
+            buffer = await asyncio.to_thread(make_json_diagram, df)
+            photo = BufferedInputFile(buffer, filename="predict_buy.jpg")
+
             json_dict["CustomerId"] = message.from_user.id
             json_dict["TelegramUsername"] = message.from_user.username
             json_dict["CustomerName"] = f'{kc_user.get("firstName")} {kc_user.get("lastName")}'
 
             filename = f"{user_item}_{time_period}_лет.json"
             json_file = get_json_file(json_dict, filename)
+            await message.bot.send_photo(message.from_user.id, photo=photo)
             await message.answer_document(json_file)
             await message.answer(output_str, reply_markup=get_remaining_kb())
