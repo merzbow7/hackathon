@@ -1,0 +1,43 @@
+{
+  "id": 0,
+  "lotEntityId": 0,
+  "CustomerId": 0,
+  "TelegramUsername": 0,
+  "CustomerName": 0,
+  "rows": [
+    {
+      "DeliverySchedule": {
+        "execution_time_days": 13,
+        "dates": {
+          "end_date": "07.07.2024",
+          "start_date": "24.06.2024"
+        },
+        "deliveryAmount": 13418,
+        "deliveryConditions": "",
+        "year": 2024
+      },
+      "address": {
+        "gar_id": "",
+        "text": ""
+      },
+      "entityId": 15642398.0,
+      "id": 15642398.0,
+      "nmc": 3709050.1832420644,
+      "okei_code": "",
+      "purchaseAmount": 13418,
+      "spgzCharacteristics": [
+        {
+          "characteristicName": "Коробка, бумага",
+          "characteristicSpgzEnums": "",
+          "conditionTypeId": "",
+          "kpgzCharacteristicId": "01.20.07.11.04",
+          "okei_id": "",
+          "selectType": "",
+          "typeId": "",
+          "value1": "",
+          "value2": ""
+        }
+      ]
+    }
+  ]
+}

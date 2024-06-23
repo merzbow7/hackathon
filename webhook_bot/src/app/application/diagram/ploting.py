@@ -54,11 +54,30 @@ def make_remaining_diagram(df: pd.DataFrame) -> bytes:
         return buffer.getvalue()
 
 
-def make_predict_diagram(df: pd.DataFrame) -> bytes:
+def make_predict_end_diagram(df: pd.DataFrame) -> bytes:
     with threading.RLock():
-        fig, ax = plt.subplots()
-        sns.barplot(df, x="количество", y="товар", ax=ax)
-        plt.grid()
+        sns.set_theme(style="darkgrid")
+        sns.set_context("talk", font_scale=0.8, rc={"lines.linewidth": 2.})
+        fig, ax = plt.subplots(figsize=(10, 1.5 * df['товар'].nunique()))
+        sns.barplot(df, x="количество", y="товар", ax=ax, palette="magma")
+        ax.yaxis.grid(True)  # Hide the horizontal gridlines
+        ax.xaxis.grid(True)  # Show the vertical gridlines
+
+        buffer = io.BytesIO()
+        plt.savefig(buffer, **image_settings)
+        buffer.seek(0)
+        plt.close()
+        return buffer.getvalue()
+
+
+def make_predict_buy_diagram(df: pd.DataFrame) -> bytes:
+    with threading.RLock():
+        sns.set_theme(style="darkgrid")
+        sns.set_context("talk", font_scale=0.8, rc={"lines.linewidth": 2.})
+        fig, ax = plt.subplots(figsize=(15, 1.5 * df['товар'].nunique()))
+        sns.barplot(df, x="количество", y="товар", hue='type', ax=ax, palette="magma")
+        ax.yaxis.grid(True)  # Hide the horizontal gridlines
+        ax.xaxis.grid(True)  # Show the vertical gridlines
 
         buffer = io.BytesIO()
         plt.savefig(buffer, **image_settings)

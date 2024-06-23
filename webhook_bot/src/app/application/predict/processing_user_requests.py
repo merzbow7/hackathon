@@ -1,67 +1,65 @@
 import pandas as pd
 import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
+import datetime
+from datetime import date
 
-reverse_column_mapping_directory = {
-    'ste_name': 'название_сте',
-    'characteristics_name': 'наименование_характеристик',
-    'reference_price': 'рефцена',
-    'final_category_directory': 'конечную_категорию_справочника',
-    'kpgz_code': 'кпгз_код',
-    'kpgz': 'кпгз',
-    'spgz_code': 'спгз_код',
-    'spgz': 'спгз',
-    'registry_number_rk': 'реестровый_номер_в_рк'
-}
+reverse_column_mapping_directory = {'ste_name': 'название_сте',
+                                    'characteristics_name': 'наименование_характеристик',
+                                    'reference_price': 'рефцена',
+                                    'final_category_directory': 'конечную_категорию_справочника',
+                                    'kpgz_code': 'кпгз_код',
+                                    'kpgz': 'кпгз',
+                                    'spgz_code': 'спгз_код',
+                                    'spgz': 'спгз',
+                                    'registry_number_rk': 'реестровый_номер_в_рк'}
 
-reverse_column_mapping_contracts = {
-    'id_spgz': 'id_спгз',
-    'name_spgz': 'наименование_спгз',
-    'registry_number_rk': 'реестровый_номер_в_рк',
-    'lot_number_procurement': 'номер_лота_в_закупке',
-    'ikz': 'икз',
-    'customer': 'заказчик',
-    'subject_gk_name': 'наименование_предмет_гк',
-    'supplier_selection_method': 'способ_определения_поставщика',
-    'contract_basis_single_supplier': 'основание_заключения_контракта_с_ед__поставщиком',
-    'contract_status': 'статус_контракта',
-    'version_number': '№_версии',
-    'gk_price_rub': 'цена_гк_руб',
-    'gk_price_at_signing_rub': 'цена_гк_при_заключении_руб',
-    'paid_rub': 'оплачено_руб',
-    'paid_percent': 'оплачено_%',
-    'final_kpgz_code': 'конечный_код_кпгз',
-    'final_kpgz_name': 'конечное_наименование_кпгз',
-    'contract_date': 'дата_заключения',
-    'registration_date': 'дата_регистрации',
-    'last_change_date': 'дата_последнего_изменения',
-    'execution_start_date': 'срок_исполнения_с',
-    'execution_end_date': 'срок_исполнения_по',
-    'contract_end_date': 'дата_окончания_срока_действия',
-    'supplier_sme_status_at_contract_signing': 'принадлежность_поставщика_к_мсп_на_момент_заключения_гк',
-    'supplier_region_name': 'наименование_субъекта_рф_поставщика',
-    'law_basis_44_223': 'закон_основание_44_223',
-    'electronic_execution': 'электронное_исполнение',
-    'fulfilled_by_supplier': 'исполнено_поставщиком'
-}
+reverse_column_mapping_contracts = {'id_spgz': 'id_спгз',
+                                    'name_spgz': 'наименование_спгз',
+                                    'registry_number_rk': 'реестровый_номер_в_рк',
+                                    'lot_number_procurement': 'номер_лота_в_закупке',
+                                    'ikz': 'икз',
+                                    'customer': 'заказчик',
+                                    'subject_gk_name': 'наименование_предмет_гк',
+                                    'supplier_selection_method': 'способ_определения_поставщика',
+                                    'contract_basis_single_supplier': 'основание_заключения_контракта_с_ед__поставщиком',
+                                    'contract_status': 'статус_контракта',
+                                    'version_number': '№_версии',
+                                    'gk_price_rub': 'цена_гк_руб',
+                                    'gk_price_at_signing_rub': 'цена_гк_при_заключении_руб',
+                                    'paid_rub': 'оплачено_руб',
+                                    'paid_percent': 'оплачено_%',
+                                    'final_kpgz_code': 'конечный_код_кпгз',
+                                    'final_kpgz_name': 'конечное_наименование_кпгз',
+                                    'contract_date': 'дата_заключения',
+                                    'registration_date': 'дата_регистрации',
+                                    'last_change_date': 'дата_последнего_изменения',
+                                    'execution_start_date': 'срок_исполнения_с',
+                                    'execution_end_date': 'срок_исполнения_по',
+                                    'contract_end_date': 'дата_окончания_срока_действия',
+                                    'supplier_sme_status_at_contract_signing': 'принадлежность_поставщика_к_мсп_на_момент_заключения_гк',
+                                    'supplier_region_name': 'наименование_субъекта_рф_поставщика',
+                                    'law_basis_44_223': 'закон_основание_44_223',
+                                    'electronic_execution': 'электронное_исполнение',
+                                    'fulfilled_by_supplier': 'исполнено_поставщиком'}
 
-reverse_column_mapping_turnover = {
-    'product': 'товар',
-    'code': 'код',
-    'unit_of_measurement': 'единица_измерения',
-    'quantity_start_debit': 'количество_начало_дебет',
-    'balance_start_debit': 'сальдо_начало_дебет',
-    'quantity_turnover_debit': 'количество_обороты_дебет',
-    'turnover_debit': 'обороты_дебет',
-    'quantity_turnover_credit': 'количество_обороты_кредит',
-    'turnover_credit': 'обороты_кредит',
-    'quantity_end_debit': 'количество_конец_дебет',
-    'balance_end_debit': 'сальдо_конец_дебет',
-    'account_number': 'номер_счета',
-    'quarter_number': 'номер_квартала',
-    'year': 'год',
-}
+reverse_column_mapping_turnover = {'product': 'товар',
+                                   'code': 'код',
+                                   'unit_of_measurement': 'единица_измерения',
+                                   'quantity_start_debit': 'количество_начало_дебет',
+                                   'balance_start_debit': 'сальдо_начало_дебет',
+                                   'quantity_turnover_debit': 'количество_обороты_дебет',
+                                   'turnover_debit': 'обороты_дебет',
+                                   'quantity_turnover_credit': 'количество_обороты_кредит',
+                                   'turnover_credit': 'обороты_кредит',
+                                   'quantity_end_debit': 'количество_конец_дебет',
+                                   'balance_end_debit': 'сальдо_конец_дебет',
+                                   'account_number': 'номер_счета',
+                                   'quarter_number': 'номер_квартала',
+                                   'year': 'год'}
 
 
 def sentence_similarity(sentence1, sentence2):
@@ -74,6 +72,34 @@ def sentence_similarity(sentence1, sentence2):
     # Вычисляем косинусное сходство между двумя векторами
     similarity = cosine_similarity(tfidf_matrix[0:1], tfidf_matrix[1:2])[0][0]
     return similarity
+
+
+def rename_units(x):
+    unit_of_measurement_replace_dict = {'пач': 'шт',
+                                        'пачка': 'шт',
+                                        'упак': 'шт',
+                                        'к-т': 'компл',
+                                        'набор': 'компл',
+                                        0: '-'}
+    try:
+        return unit_of_measurement_replace_dict[x]
+    except:
+        return x
+
+
+def get_quarter_declension(number):
+    """
+    Возвращает правильное склонение слова "квартал" в зависимости от числа.
+
+    :param number: Число кварталов
+    :return: Строка с правильным склонением
+    """
+    if number % 10 == 1 and number % 100 != 11:
+        return "{:0.1f} квартал".format(number)
+    elif 2 <= number % 10 <= 4 and (number % 100 < 10 or number % 100 >= 20):
+        return "{:0.1f} квартала".format(number)
+    else:
+        return "{:0.1f} кварталов".format(number)
 
 
 def prepare_regular_items_dataframe(df_contracts):
@@ -114,6 +140,9 @@ def is_item_regular(df_contracts, df_directory, user_item_name):
     df_directory['реестровый_номер_в_рк'] = df_directory['реестровый_номер_в_рк'].astype(int)
     df_contracts_regular['реестровый_номер_в_рк'] = df_contracts_regular['реестровый_номер_в_рк'].astype(int)
 
+    df_directory['кпгз_код'] = df_directory['кпгз_код'].astype(str)
+    df_contracts_regular['конечный_код_кпгз'] = df_contracts_regular['конечный_код_кпгз'].astype(str)
+
     df_merged = pd.merge(df_contracts_regular, df_directory, left_on=['реестровый_номер_в_рк', 'конечный_код_кпгз'],
                          right_on=['реестровый_номер_в_рк', 'кпгз_код'])
 
@@ -140,6 +169,8 @@ def find_remainders_by_item_name(df_remainders_total, item_name):
 def processing_user_request_remainders(df_turnover_total, user_item_name):
     df_turnover_total = df_turnover_total.copy().rename(columns=reverse_column_mapping_turnover)
 
+    df_turnover_total['единица_измерения'] = df_turnover_total['единица_измерения'].apply(rename_units)
+
     df_remainders_total = prepare_final_remainders_dataframe(df_turnover_total)
 
     df_remainders = find_remainders_by_item_name(df_remainders_total, user_item_name)
@@ -152,7 +183,7 @@ def processing_user_request_remainders(df_turnover_total, user_item_name):
         return res
 
     else:
-        output_str = 'Остатки по всем товарам, подходящим под описание "{}", приведены в таблице на рисунке выше (состояние на конец {} квартала {} года)'. \
+        output_str = 'Остатки по всем товарам, подходящим под описание "{}", приведены в таблице на рисунке ниже (состояние на конец {} квартала {} года)'. \
             format(user_item_name, df_remainders_total['номер_квартала'].unique()[0],
                    df_remainders_total['год'].unique()[0])
 
@@ -173,6 +204,7 @@ def processing_user_request_time_to_finish_check(df_contracts, df_directory, df_
     df_contracts = df_contracts.copy().rename(columns=reverse_column_mapping_contracts)
     df_directory = df_directory.copy().rename(columns=reverse_column_mapping_directory)
     df_turnover_total = df_turnover_total.copy().rename(columns=reverse_column_mapping_turnover)
+    df_turnover_total['единица_измерения'] = df_turnover_total['единица_измерения'].apply(rename_units)
 
     is_regular = is_item_regular(df_contracts, df_directory, user_item_name)
 
@@ -194,7 +226,13 @@ def processing_user_request_time_to_finish_check(df_contracts, df_directory, df_
 
     output_str = 'По Вашему запросу в оборотной ведомости за {} год(ы) были найдены следующие товары, подходящие под описание (для оценки скорости расходования товаров):\n'.format(
         df_turnover_total['год'].unique())
-    output_str += '\n'.join(items_list)
+
+    df_tmp2 = df_turnover_total[df_turnover_total['товар'].isin(items_list)][
+        ['товар', 'единица_измерения']].drop_duplicates()
+    df_tmp2['full_name'] = df_tmp2['товар'] + ' [' + df_tmp2['единица_измерения'] + ']'
+
+    output_str += '\n'.join(df_tmp2['full_name'].to_list())
+    output_str += '\n'
     # output_str += '\n\nПодходят ли эти товары под Ваш запрос? Или Вы хотели бы его скорректировать?'
 
     # на выбор две кнопки - "товары подходят, продолжаем" или "скорректировать запрос"
@@ -205,15 +243,16 @@ def processing_user_request_time_to_finish_check(df_contracts, df_directory, df_
 
 def processing_user_request_time_to_finish(df_turnover_total, user_item_name, items_list):
     df_turnover_total = df_turnover_total.copy().rename(columns=reverse_column_mapping_turnover)
+    df_turnover_total['единица_измерения'] = df_turnover_total['единица_измерения'].apply(rename_units)
 
     df_remainders_total = prepare_final_remainders_dataframe(df_turnover_total)
 
-    df_tmp = df_turnover_total[df_turnover_total['товар'].isin(items_list)][
+    df_tmp_init = df_turnover_total[df_turnover_total['товар'].isin(items_list)][
         ['товар', 'единица_измерения', 'количество_обороты_кредит', 'номер_квартала', 'год']]
 
-    df_tmp['товар'] = user_item_name
+    df_tmp_init['товар'] = user_item_name
 
-    df_tmp = df_tmp.groupby(['товар', 'номер_квартала', 'год']).sum().reset_index()
+    df_tmp = df_tmp_init.groupby(['товар', 'номер_квартала', 'год']).sum().reset_index()
 
     df_tmp['товар'] = df_tmp['товар'] + '\n' + 'квартал: ' + df_tmp['номер_квартала'].astype(str) + '\n' + 'год: ' + \
                       df_tmp['год'].astype(str)
@@ -239,8 +278,18 @@ def processing_user_request_time_to_finish(df_turnover_total, user_item_name, it
     # plt.grid()
     # plt.close(fig)
 
-    output_str += '\nСредняя скорость расхода товара "{}" составляет {} единиц в квартал.\nИсходя из этого, оставшегося на складе товара хватит на {:0.2f} месяцев'.format(
-        user_item_name, V, T)
+    # print(df_tmp_init['единица_измерения'].unique())
+    if df_tmp_init['единица_измерения'].nunique() == 1 and df_tmp_init['единица_измерения'].unique()[0] != '-':
+        unit = df_tmp_init['единица_измерения'].unique()[0]
+    elif df_tmp_init['единица_измерения'].nunique() > 1:
+        unit = 'единиц'
+        output_str += '\n!! Обратите внимание, что приведенные выше товары имеют разные единицы измерения ({}), поэтому прогноз может быть некорректным !!\n'.format(
+            df_tmp_init['единица_измерения'].unique())
+    else:
+        unit = 'единиц'
+
+    output_str += '\nСредняя скорость расхода товара "{}" составляет {:0.1f} [{}] в квартал.\nИсходя из этого, оставшегося на складе товара хватит на {:0.2f} месяцев'.format(
+        user_item_name, V, unit, T)
 
     res = (0, output_str, df_tmp)
     return res
@@ -248,21 +297,24 @@ def processing_user_request_time_to_finish(df_turnover_total, user_item_name, it
 
 def processing_user_request_how_many(time_period, df_turnover_total, user_item_name, items_list):
     df_turnover_total = df_turnover_total.copy().rename(columns=reverse_column_mapping_turnover)
+    df_turnover_total['единица_измерения'] = df_turnover_total['единица_измерения'].apply(rename_units)
+
+    df_tmp2 = df_turnover_total[df_turnover_total['товар'].isin(items_list)][
+        ['товар', 'единица_измерения']].drop_duplicates()
+    df_tmp2['full_name'] = df_tmp2['товар'] + ' [' + df_tmp2['единица_измерения'] + ']'
 
     output_str = 'По Вашему запросу в оборотной ведомости за {} год(ы) были найдены следующие товары, подходящие под описание:\n'.format(
         df_turnover_total['год'].unique())
-    output_str += '\n'.join(items_list)
+    output_str += '\n'.join(df_tmp2['full_name'].to_list())
 
-    output_str += '\n\nДанные по закупкам и расходам для этих товаров приведены на диаграмме\n'
-
-    df_tmp = df_turnover_total[df_turnover_total['товар'].isin(items_list)][
+    df_tmp_init = df_turnover_total[df_turnover_total['товар'].isin(items_list)][
         ['товар', 'единица_измерения', 'обороты_дебет', 'количество_обороты_дебет', 'количество_обороты_кредит',
          'номер_квартала', 'год']]
 
-    df_tmp['товар'] = user_item_name
-    df_tmp = df_tmp.sort_values(['год', 'номер_квартала'])
+    df_tmp_init['товар'] = user_item_name
+    df_tmp_init = df_tmp_init.sort_values(['год', 'номер_квартала'])
 
-    df_tmp = df_tmp.groupby(['товар', 'номер_квартала', 'год']).sum().reset_index()
+    df_tmp = df_tmp_init.groupby(['товар', 'номер_квартала', 'год']).sum().reset_index()
 
     df_tmp['товар'] = df_tmp['товар'] + '\n' + 'квартал: ' + df_tmp['номер_квартала'].astype(str) + '\n' + 'год: ' + \
                       df_tmp['год'].astype(str)
@@ -284,19 +336,33 @@ def processing_user_request_how_many(time_period, df_turnover_total, user_item_n
     total_volume = time_period * count_year
     total_price = time_period * count_year * price_for_item
 
-    output_str += '\nПо данным за {} год(ы) товар "{}" закупался в количестве {} единиц в год.'.format(years_list,
-                                                                                                       user_item_name,
-                                                                                                       count_year)
+    if df_tmp_init['единица_измерения'].nunique() == 1 and df_tmp_init['единица_измерения'].unique()[0] != '-':
+        unit = df_tmp_init['единица_измерения'].unique()[0]
+    elif df_tmp_init['единица_измерения'].nunique() > 1:
+        unit = 'единиц'
+        output_str += '\n\n!! Обратите внимание, что приведенные выше товары имеют разные единицы измерения ({}), поэтому прогноз может быть некорректным !!\n'.format(
+            df_tmp_init['единица_измерения'].unique())
+    else:
+        unit = 'единиц'
+
+    output_str += '\n\nДанные по закупкам и расходам для этих товаров приведены на диаграмме\n'
+    output_str += '\nПо данным за {} год(ы) товар "{}" закупался в количестве {} [{}] в год.'.format(years_list,
+                                                                                                     user_item_name,
+                                                                                                     count_year, unit)
     # output_str += '\nПо данным последних кварталов средняя стоимость одной единицы товара составила {:0.2f} рублей'.format(price_for_item)
-    output_str += '\nПо данным последней закупки средняя стоимость одной единицы товара составила {:0.2f} рублей'.format(
-        price_for_item)
-    output_str += '\nЕсли количество сотрудников не изменится, то на {} лет необходимо закупить {:0.1f} единиц товара общей стоимостью порядка {:0.2f} рублей'.format(
-        time_period, total_volume, total_price)
+    output_str += '\nПо данным последней закупки средняя стоимость одной [{}] товара составила {:0.2f} рублей'.format(
+        unit, price_for_item)
+    output_str += '\nЕсли количество сотрудников не изменится, то на {} лет необходимо закупить {:0.1f} [{}] товара общей стоимостью порядка {:0.2f} рублей'.format(
+        time_period, total_volume, unit, total_price)
 
     # fig, ax = plt.subplots()
     # sns.barplot(df_tmp_res, x="количество", y="товар", hue='type', ax=ax)
     # plt.grid()
     # plt.close(fig)
+
+    df_prediction_info = {'товар': df_tmp_res.iloc[0, 0].split('\n')[0] + '\nпрогноз закупки на\n{}'.format(
+        get_quarter_declension(time_period * 4)), 'количество': total_volume, 'type': 'прогноз закупки'}
+    df_tmp_res = df_tmp_res._append(df_prediction_info, ignore_index=True)
 
     res = (0, output_str, df_tmp_res, total_volume, total_price)
     return res
@@ -306,6 +372,7 @@ def processing_json_calc_volume(time_period, df_contracts, df_directory, df_turn
     df_contracts = df_contracts.copy().rename(columns=reverse_column_mapping_contracts)
     df_directory = df_directory.copy().rename(columns=reverse_column_mapping_directory)
     df_turnover_total = df_turnover_total.copy().rename(columns=reverse_column_mapping_turnover)
+    df_turnover_total['единица_измерения'] = df_turnover_total['единица_измерения'].apply(rename_units)
 
     is_regular = is_item_regular(df_contracts, df_directory, user_item_name)
 
@@ -323,6 +390,9 @@ def processing_json_calc_volume(time_period, df_contracts, df_directory, df_turn
         if len(items_list) == 0 and len(items_list_contracts_spgz) == 0:
             df_directory['реестровый_номер_в_рк'] = df_directory['реестровый_номер_в_рк'].astype(int)
             df_contracts['реестровый_номер_в_рк'] = df_contracts['реестровый_номер_в_рк'].astype(int)
+
+            df_directory['кпгз_код'] = df_directory['кпгз_код'].astype(str)
+            df_contracts['конечный_код_кпгз'] = df_contracts['конечный_код_кпгз'].astype(str)
 
             df_merged = pd.merge(df_contracts, df_directory, left_on=['реестровый_номер_в_рк', 'конечный_код_кпгз'],
                                  right_on=['реестровый_номер_в_рк', 'кпгз_код'])
@@ -346,6 +416,14 @@ def processing_json_calc_volume(time_period, df_contracts, df_directory, df_turn
 
             # здесь должна быть возможность скорректировать запрос на товары
             res = processing_user_request_how_many(time_period, df_turnover_total, user_item_name, items_list)
+
+            df_tmp_init = df_turnover_total[df_turnover_total['товар'].isin(items_list)]
+            if df_tmp_init['единица_измерения'].nunique() == 1 and df_tmp_init['единица_измерения'].unique()[0] != '-':
+                unit = df_tmp_init['единица_измерения'].unique()[0]
+            else:
+                unit = ''
+
+            res = (*res, unit)
             return res
 
     # если вообще нигде не нашли этот товар
@@ -360,10 +438,11 @@ def processing_json_calc_volume(time_period, df_contracts, df_directory, df_turn
         return res
 
 
-def prepare_json(df_turnover_total, df_contracts, df_directory, user_item_name, total_volume, total_price):
+def prepare_json(df_turnover_total, df_contracts, df_directory, user_item_name, total_volume, total_price, okei_code):
     df_contracts = df_contracts.copy().rename(columns=reverse_column_mapping_contracts)
     df_directory = df_directory.copy().rename(columns=reverse_column_mapping_directory)
     df_turnover_total = df_turnover_total.copy().rename(columns=reverse_column_mapping_turnover)
+    df_turnover_total['единица_измерения'] = df_turnover_total['единица_измерения'].apply(rename_units)
 
     json_dict = {}
 
@@ -377,6 +456,13 @@ def prepare_json(df_turnover_total, df_contracts, df_directory, user_item_name, 
     df_contracts_other = df_contracts[
         ~df_contracts['реестровый_номер_в_рк'].isin(df_directory['реестровый_номер_в_рк'].unique())]
     df_contracts_other['название_сте'] = df_contracts_other['наименование_спгз']
+
+    df_directory['реестровый_номер_в_рк'] = df_directory['реестровый_номер_в_рк'].astype(int)
+    df_contracts_cut['реестровый_номер_в_рк'] = df_contracts_cut['реестровый_номер_в_рк'].astype(int)
+
+    df_directory['кпгз_код'] = df_directory['кпгз_код'].astype(str)
+    df_contracts_cut['конечный_код_кпгз'] = df_contracts_cut['конечный_код_кпгз'].astype(str)
+
     df_merged = pd.merge(df_contracts_cut, df_directory, left_on=['реестровый_номер_в_рк', 'конечный_код_кпгз'],
                          right_on=['реестровый_номер_в_рк', 'кпгз_код'])
 
@@ -391,13 +477,46 @@ def prepare_json(df_turnover_total, df_contracts, df_directory, user_item_name, 
         lambda x: sentence_similarity(x.lower(), user_item_name.lower())) + df_contracts_total[
                      'наименование_предмет_гк'].apply(lambda x: sentence_similarity(x.lower(), user_item_name.lower()))
     idxmax = series_res.idxmax()
-    json_dict['delivery_time'] = \
-        (df_contracts_total['срок_исполнения_по'] - df_contracts_total['срок_исполнения_с']).dt.days[idxmax]
-    json_dict['deliveryAmount'] = total_volume
-    json_dict['entityId'] = df_contracts_total.loc[idxmax, 'id_спгз']
-    json_dict['id'] = df_contracts_total.loc[idxmax, 'id_спгз']
-    json_dict['nmc'] = total_price
-    json_dict['purchaseAmount'] = total_volume
-    json_dict['spgzCharacteristics_kpgzCharacteristicId'] = df_contracts_total.loc[idxmax, 'конечный_код_кпгз']
+    json_dict['id'] = 0  # random number
+    json_dict['lotEntityId'] = 0
+    json_dict['CustomerId'] = 0  # telegram id
+    json_dict['TelegramUsername'] = 0  # telegram account (@alkotikov)
+    json_dict['CustomerName'] = 0  # наименование юзера (типа Лев Толстой) из keycloak
+
+    item_dict = {}
+    item_dict['DeliverySchedule'] = {}
+    execution_time_days = int(
+        (df_contracts_total['срок_исполнения_по'] - df_contracts_total['срок_исполнения_с']).dt.days[idxmax])
+    processing_time_days = int(
+        (df_contracts_total['срок_исполнения_с'] - df_contracts_total['дата_заключения']).dt.days[idxmax])
+
+    item_dict['DeliverySchedule']['execution_time_days'] = execution_time_days
+    item_dict['DeliverySchedule']['dates'] = {
+        'end_date': (date.today() + datetime.timedelta(days=(execution_time_days + processing_time_days))).strftime(
+            "%d.%m.%Y"),
+        'start_date': (date.today() + datetime.timedelta(days=processing_time_days)).strftime("%d.%m.%Y")}
+    item_dict['DeliverySchedule']['deliveryAmount'] = int(total_volume)
+    item_dict['DeliverySchedule']['deliveryConditions'] = ''
+    item_dict['DeliverySchedule']['year'] = date.today().year
+
+    item_dict['address'] = {'gar_id': '', 'text': ''}
+
+    item_dict['entityId'] = df_contracts_total.loc[idxmax, 'id_спгз']
+    item_dict['id'] = df_contracts_total.loc[idxmax, 'id_спгз']
+    item_dict['nmc'] = total_price
+    item_dict['okei_code'] = okei_code
+    item_dict['purchaseAmount'] = int(total_volume)
+
+    item_dict['spgzCharacteristics'] = [{'characteristicName': df_contracts_total.loc[idxmax, 'наименование_спгз'],
+                                         'characteristicSpgzEnums': '',
+                                         'conditionTypeId': '',
+                                         'kpgzCharacteristicId': df_contracts_total.loc[idxmax, 'конечный_код_кпгз'],
+                                         'okei_id': okei_code,
+                                         'selectType': '',
+                                         'typeId': '',
+                                         'value1': '',
+                                         'value2': ''}]
+
+    json_dict['rows'] = [item_dict]
 
     return json_dict

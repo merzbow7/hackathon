@@ -6,6 +6,7 @@ from aiogram.types import Message, User
 from app.adapters.sqlalchemy_db.users.repository import get_user_repo
 from app.bot.commands.start import auth_case
 from app.config.settings import Settings
+from app.main.keycloak_provider import get_keycloak_admin_provider
 
 
 class AuthMiddleware(BaseMiddleware):
@@ -29,4 +30,5 @@ class AuthMiddleware(BaseMiddleware):
             return await auth_case(message=event.message, settings=settings)
 
         data["db_user"] = user
+        data["kc_provider"] = get_keycloak_admin_provider()
         return await handler(event, data)

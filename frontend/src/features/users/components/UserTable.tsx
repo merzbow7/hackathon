@@ -16,6 +16,7 @@ export default function UserTable() {
     <Table.Tr key={user.id}>
       <Table.Td>{user.first_name + ' ' + user.last_name}</Table.Td>
       <Table.Td>{user.telegram_id}</Table.Td>
+      <Table.Td>{user.telegram_username}</Table.Td>
       <Table.Td><Pill size="md">{user.institution?.name}</Pill></Table.Td>
       <Table.Td>
         <UserMenu userId={user.id}/>
@@ -30,6 +31,7 @@ export default function UserTable() {
           <Table.Tr>
             <Table.Th>Имя</Table.Th>
             <Table.Th>Telegram Id</Table.Th>
+            <Table.Th>Telegram User</Table.Th>
             <Table.Th>Учреждение</Table.Th>
             <Table.Th style={{width: '60px'}}></Table.Th>
           </Table.Tr>

@@ -14,7 +14,11 @@ class UserRepository:
 
     async def get_all(self):
         async with self.session() as session:
-            stmt = select(User).options(selectinload(User.institution))
+            stmt = select(User).options(
+                selectinload(User.institution),
+            ).where(
+                User.telegram_id.isnot(None),
+            )
             result = await session.execute(stmt)
             return result.scalars().all()
 
@@ -27,6 +31,8 @@ class UserRepository:
         async with self.session() as session:
             stmt = delete(User).where(
                 User.id == user_id,
+            ).where(
+                User.telegram_id.isnot(None),
             )
             result = await session.execute(stmt)
             deleted = result.rowcount
@@ -39,6 +45,8 @@ class UserRepository:
                 selectinload(User.institution),
             ).where(
                 User.id == user_id,
+            ).where(
+                User.telegram_id.isnot(None),
             )
             result = await session.execute(stmt)
             return result.scalar_one_or_none()

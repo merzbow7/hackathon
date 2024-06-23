@@ -4,6 +4,7 @@ import http from '../services/http';
 export interface User {
   id: number;
   telegram_id: number;
+  telegram_username: string;
   first_name: string;
   last_name: string;
   keycloak_id: string;
@@ -33,6 +34,13 @@ const fetchUsers = createAsyncThunk(
   async () => {
     const response = await http.get('/admin/users');
     return response.data;
+  }
+);
+
+const deleteUser = createAsyncThunk(
+  'users/deleteUser',
+  async (userId: string | number) => {
+    await http.delete(`/admin/user/${userId}`);
   }
 );
 
@@ -68,6 +76,7 @@ const counterSlice = createSlice({
 
 export {
   fetchUsers,
+  deleteUser,
   updateInstitution,
 };
 

@@ -8,7 +8,7 @@ import {
 } from '@tabler/icons-react';
 import { modals } from '@mantine/modals';
 import { useAppDispatch, useAppSelector } from "../../../store";
-import { updateInstitution } from '../../../store/usersSlice';
+import { updateInstitution, deleteUser } from '../../../store/usersSlice';
 
 export default function UserMenu({ userId }: { userId: string | number}) {
   const [institutionOpened, institutionCallbacks] = useDisclosure(false);
@@ -34,7 +34,7 @@ export default function UserMenu({ userId }: { userId: string | number}) {
     labels: { confirm: 'Удалить', cancel: 'Отменить' },
     confirmProps: { color: 'red' },
     onCancel: () => console.log('Cancel'),
-    onConfirm: () => console.log('Confirmed'),
+    onConfirm: () => dispatch(deleteUser(userId)),
   });
 
   const updateUserInstitution = () => {
