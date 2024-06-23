@@ -39,8 +39,9 @@ const fetchUsers = createAsyncThunk(
 
 const deleteUser = createAsyncThunk(
   'users/deleteUser',
-  async (userId: string | number) => {
+  async (userId: string | number, { dispatch }) => {
     await http.delete(`/admin/user/${userId}`);
+    dispatch(fetchUsers());
   }
 );
 
