@@ -1,6 +1,6 @@
 import uuid
 
-from sqlalchemy import select, update
+from sqlalchemy import select, update, delete
 from sqlalchemy.ext.asyncio import async_sessionmaker
 from sqlalchemy.orm import selectinload
 
@@ -22,6 +22,16 @@ class UserRepository:
         async with self.session() as session:
             session.add(user)
             await session.commit()
+
+    async def delete(self, user_id: int):
+        async with self.session() as session:
+            stmt = delete(User).where(
+                User.id == user_id,
+            )
+            result = await session.execute(stmt)
+            deleted = result.rowcount
+            await session.commit()
+            return deleted
 
     async def get_by_id(self, user_id: int) -> User:
         async with self.session() as session:

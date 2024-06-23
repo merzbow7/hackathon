@@ -6,6 +6,7 @@ from keycloak import KeycloakAdmin
 from pydantic import BaseModel, ConfigDict, Field, TypeAdapter, model_validator
 from pydantic_core.core_schema import ValidationInfo
 from sqlalchemy.exc import IntegrityError
+from starlette import status
 from starlette.responses import Response
 
 from app.adapters.sqlalchemy_db.institution.repository import (
@@ -77,6 +78,18 @@ async def get_user(
     return UserModel.model_validate(user, context={str(user.keycloak_id): kc_user})
 
 
+@admin_router.delete("/user/{user_id}", tags=["user-management"])
+async def delete_user(
+    user_id: int,
+    user_repo: Annotated[UserRepository, Depends(get_user_repo)],
+    _kc_user: Annotated[KcUser, Depends(admin_required)],
+) -> Response:
+    user = await user_repo.delete(user_id)
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
 class UserInstitution(BaseModel):
     institution_id: int | None
 
@@ -90,8 +103,8 @@ async def set_user_institution(
 ):
     updated = await user_repo.set_institution(user_id, user_institution.institution_id)
     if not updated:
-        raise HTTPException(status_code=404, detail="Not found")
-    return Response(status_code=204)
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found")
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
 @admin_router.get("/institutions", tags=["user-management"])
@@ -125,6 +138,6 @@ async def add_group(
     try:
         await institution_repo.add(group_name)
     except IntegrityError:
-        raise HTTPException(status_code=400, detail="already exists")
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="already exists")
     else:
-        return Response(status_code=204)
+        return Response(status_code=status.HTTP_204_NO_CONTENT)
