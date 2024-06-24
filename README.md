@@ -3,10 +3,10 @@
 1. Пользователь заходит в телеграм-бот https://t.me/rolling_steel_bot, нажимает кнопку /start и авторизуется. 
 
    Если бот используется под разными учетными записями, то лучше открывать в режиме инкогнито). По умолчанию у пользователя нет доступа ни к каким учреждениям.
-3. Администратор заходит в веб-интерфейс http://83.166.237.76:3000/ и выставляет права пользователю (учреждение - "Школа 21").
+3. Администратор заходит в веб-интерфейс http://83.166.237.76:3000/ и выставляет права пользователю (учреждение - "Школа 21"). [Инструкция](https://docs.yandex.ru/docs/view?url=ya-disk-public%3A%2F%2FtAddGDpLRg2G229CGaJGA3bh0%2FLdRgivkNq9cBAP9%2BXJs7dtwHXKTJECqkIBeFJMq%2FJ6bpmRyOJonT3VoXnDag%3D%3D%3A%2F%D0%A0%D1%83%D0%BA%D0%BE%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%BE%20%D0%BF%D0%BE%D0%BB%D1%8C%D0%B7%D0%BE%D0%B2%D0%B0%D1%82%D0%B5%D0%BB%D1%8F%20%D0%90%D0%B4%D0%BC%D0%B8%D0%BD%20%D0%9F%D0%B0%D0%BD%D0%B5%D0%BB%D1%8C.docx&name=%D0%A0%D1%83%D0%BA%D0%BE%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%BE%20%D0%BF%D0%BE%D0%BB%D1%8C%D0%B7%D0%BE%D0%B2%D0%B0%D1%82%D0%B5%D0%BB%D1%8F%20%D0%90%D0%B4%D0%BC%D0%B8%D0%BD%20%D0%9F%D0%B0%D0%BD%D0%B5%D0%BB%D1%8C.docx&nosw=1)
 
    В случае, если под этой учетной записью уже есть пользователь, администратор может его удалить. Под одной учетной записью может быть только один пользователь.
-4. Пользователь может взаимодействовать с ботом
+4. Пользователь может взаимодействовать с ботом. [Инструкция](https://docs.yandex.ru/docs/view?url=ya-disk-ublic%3A%2F%2FtAddGDpLRg2G229CGaJGA3bh0%2FLdRgivkNq9cBAP9%2BXJs7dtwHXKTJECqkIBeFJMq%2FJ6bpmRyOJonT3VoXnDag%3D%3D%3A%2F%D0%BE%D0%BF%D0%B8%D1%81%D0%B0%D0%BD%D0%B8%D0%B5_%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D1%8B_%D0%B1%D0%BE%D1%82%D0%B0.docx&name=%D0%BE%D0%BF%D0%B8%D1%81%D0%B0%D0%BD%D0%B8%D0%B5_%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D1%8B_%D0%B1%D0%BE%D1%82%D0%B0.docx) [Видеоинструкция](https://disk.yandex.ru/d/WJHebNgl5l7s4A/%D0%98%D1%81%D0%BF%D0%BE%D0%BB%D1%8C%D0%B7%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D0%B5%20%D1%81%D0%B5%D1%80%D0%B2%D0%B8%D1%81%D0%B0.mp4)
 
 ### Учетные записи
 - Пароли всех пользователей и администратора: 4hakat0n
